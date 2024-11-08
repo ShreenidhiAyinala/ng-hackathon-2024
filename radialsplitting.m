@@ -73,28 +73,31 @@ function [sub_polygon_vertices, optimal_paths, path_lengths, sub_areas] = radial
         % Find the closest point on each edge of the polygon to the launch point
         min_dist = Inf;
         closest_point = [x0, y0]; % Initialize to current launch point in case no closer point is found
-        
-        for i = 1:n_vertices
-            % Define current edge endpoints
-            p1 = [xv(i), yv(i)];
-            p2 = [xv(mod(i, n_vertices) + 1), yv(mod(i, n_vertices) + 1)];
-            
-            % Calculate the closest point on this edge to the launch point
-            t = dot([x0 - p1(1), y0 - p1(2)], p2 - p1) / norm(p2 - p1)^2;
-            t = max(0, min(1, t));  % Clamp t to [0, 1] to ensure the point lies on the segment
-            
-            % Compute the closest point
-            closest_on_edge = p1 + t * (p2 - p1);
-            
-            % Calculate the distance from launch point to this closest point
-            dist = norm([x0, y0] - closest_on_edge);
-            
-            % Update if this is the closest point found so far
-            if dist < min_dist
-                min_dist = dist;
-                closest_point = closest_on_edge;
+        isInside = inpolygon(x0,y0,xv,yv)
+        if ~isInside
+            for i = 1:n_vertices
+                % Define current edge endpoints
+                p1 = [xv(i), yv(i)];
+                p2 = [xv(mod(i, n_vertices) + 1), yv(mod(i, n_vertices) + 1)];
+                
+                % Calculate the closest point on this edge to the launch point
+                t = dot([x0 - p1(1), y0 - p1(2)], p2 - p1) / norm(p2 - p1)^2;
+                t = max(0, min(1, t));  % Clamp t to [0, 1] to ensure the point lies on the segment
+                
+                % Compute the closest point
+                closest_on_edge = p1 + t * (p2 - p1);
+                
+                % Calculate the distance from launch point to this closest point
+                dist = norm([x0, y0] - closest_on_edge);
+                
+                % Update if this is the closest point found so far
+                if dist < min_dist
+                    min_dist = dist;
+                    closest_point = closest_on_edge;
+                end
             end
         end
+        
         
         % Set the new launch point to the closest point on the polygon boundary
         x0 = closest_point(1);
